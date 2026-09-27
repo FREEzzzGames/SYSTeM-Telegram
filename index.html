@@ -2,30 +2,133 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   >
+
   <meta name="theme-color" content="#050807">
 
   <title>SYSTeM</title>
 
-  <meta
-    http-equiv="refresh"
-    content="0; url=./frontend/index.html"
-  >
+  <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
-  <script>
-    window.location.replace("./frontend/index.html");
-  </script>
+  <link rel="stylesheet" href="./css/system.css?v=2">
 </head>
 
 <body>
-  <noscript>
-    <p>
-      SYSTeM запускается...
-      <a href="./frontend/index.html">Открыть систему</a>
-    </p>
-  </noscript>
+
+  <div class="language-switcher">
+    <button data-language="ru">RU</button>
+    <button data-language="de">DE</button>
+    <button data-language="en">EN</button>
+  </div>
+
+  <div id="app">
+
+    <main class="system">
+
+      <header class="system-header">
+        <div class="system-name">SYSTeM</div>
+
+        <div class="system-meta">
+          <span class="online" data-i18n="system.online">
+            СИСТЕМА В СЕТИ
+          </span>
+
+          <span class="status-dot"></span>
+        </div>
+      </header>
+
+      <section class="panel status-panel">
+
+        <div class="terminal-line" data-i18n="system.status">
+          СИСТЕМА ЗАПУЩЕНА
+        </div>
+
+        <div class="terminal-line">
+          <span data-i18n="system.state">
+            СОСТОЯНИЕ
+          </span>
+          <span data-i18n="system.ready">
+            ГОТОВО
+          </span>
+        </div>
+
+        <div class="terminal-line">
+          <span data-i18n="system.purpose">
+            НАЗНАЧЕНИЕ
+          </span>
+          <span data-i18n="system.unknown">
+            НЕИЗВЕСТНО
+          </span>
+        </div>
+
+        <div class="terminal-line">
+          <span data-i18n="system.connection">
+            СОЕДИНЕНИЕ
+          </span>
+          <span data-i18n="system.local">
+            ЛОКАЛЬНОЕ
+          </span>
+        </div>
+
+        <div class="terminal-line">
+          <span data-i18n="system.primary">
+            ОСНОВНОЙ ПРОЦЕСС
+          </span>
+        </div>
+
+        <div class="terminal-line">
+          <span data-i18n="system.resource">
+            ДОСТУПНЫЙ РЕСУРС
+          </span>
+        </div>
+
+      </section>
+
+      <section class="panel process-panel">
+
+        <div
+          id="resource-value"
+          class="resource-value"
+        >
+          000000
+        </div>
+
+        <button
+          id="process-button"
+          class="process-button"
+          type="button"
+          data-i18n="process.button"
+        >
+          [ ЗАПУСК ]
+        </button>
+
+      </section>
+
+      <section class="panel log-panel">
+
+        <div class="system-log-title">
+          SYSTEM LOG
+        </div>
+
+        <div id="system-log" class="system-log"></div>
+
+      </section>
+
+      <footer class="system-footer">
+        SYSTeM // PROTOTYPE
+      </footer>
+
+    </main>
+
+  </div>
+
+  <script src="./js/locales.js?v=2"></script>
+  <script src="./js/telegram.js?v=3"></script>
+  <script src="./js/system.js?v=2"></script>
+
 </body>
 </html>
