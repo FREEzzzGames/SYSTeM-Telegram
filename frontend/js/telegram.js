@@ -12,7 +12,7 @@
     init: function () {
       if (!window.Telegram || !window.Telegram.WebApp) {
         this.isTelegram = false;
-        this.showDiagnostic();
+        this.scheduleDiagnostic();
         return;
       }
 
@@ -38,37 +38,50 @@
 
       this.applyTheme();
       this.bindEvents();
-      this.showDiagnostic();
+
+      this.scheduleDiagnostic();
+    },
+
+    scheduleDiagnostic: function () {
+      /*
+       * system.js сначала выполняет свой render().
+       * Поэтому диагностику добавляем ПОСЛЕ него.
+       */
+      setTimeout(
+        () => this.showDiagnostic(),
+        800
+      );
     },
 
     showDiagnostic: function () {
-      const addLog = function () {
-        const log = document.getElementById("system-log");
+      const log = document.getElementById("system-log");
 
-        if (!log) {
-          setTimeout(addLog, 100);
-          return;
-        }
+      if (!log) {
+        return;
+      }
 
-        const telegramLine = document.createElement("div");
-        telegramLine.textContent =
-          "> TELEGRAM: " +
-          (TelegramApp.isTelegram ? "YES" : "NO");
+      const telegramLine =
+        document.createElement("div");
 
-        const dataLine = document.createElement("div");
-        dataLine.textContent =
-          "> INIT DATA: " +
-          (TelegramApp.initData ? "RECEIVED" : "EMPTY");
+      telegramLine.textContent =
+        "> TELEGRAM: " +
+        (this.isTelegram ? "YES" : "NO");
 
-        log.appendChild(telegramLine);
-        log.appendChild(dataLine);
-      };
+      const dataLine =
+        document.createElement("div");
 
-      addLog();
+      dataLine.textContent =
+        "> INIT DATA: " +
+        (this.initData ? "RECEIVED" : "EMPTY");
+
+      log.appendChild(telegramLine);
+      log.appendChild(dataLine);
     },
 
     applyTheme: function () {
-      if (!this.tg) return;
+      if (!this.tg) {
+        return;
+      }
 
       const root = document.documentElement;
       const theme = this.tg.themeParams || {};
@@ -103,7 +116,9 @@
     },
 
     bindEvents: function () {
-      if (!this.tg) return;
+      if (!this.tg) {
+        return;
+      }
 
       if (typeof this.tg.onEvent === "function") {
         this.tg.onEvent(
@@ -132,7 +147,9 @@
     },
 
     getUserId: function () {
-      return this.user ? this.user.id : null;
+      return this.user
+        ? this.user.id
+        : null;
     },
 
     getLanguageCode: function () {
@@ -153,9 +170,11 @@
 
     getViewportHeight: function () {
       return this.tg
-        ? this.tg.viewportStableHeight ||
-          this.tg.viewportHeight ||
-          0
+        ? (
+            this.tg.viewportStableHeight ||
+            this.tg.viewportHeight ||
+            0
+          )
         : 0;
     },
 
@@ -190,7 +209,8 @@
       if (
         this.tg &&
         this.tg.MainButton &&
-        typeof this.tg.MainButton.hide === "function"
+        typeof this.tg.MainButton.hide ===
+          "function"
       ) {
         this.tg.MainButton.hide();
       }
@@ -200,7 +220,8 @@
       if (
         this.tg &&
         this.tg.BackButton &&
-        typeof this.tg.BackButton.hide === "function"
+        typeof this.tg.BackButton.hide ===
+          "function"
       ) {
         this.tg.BackButton.hide();
       }
