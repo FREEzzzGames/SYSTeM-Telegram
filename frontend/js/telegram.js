@@ -10,10 +10,7 @@
     version: "",
 
     init: function () {
-      if (
-        !window.Telegram ||
-        !window.Telegram.WebApp
-      ) {
+      if (!window.Telegram || !window.Telegram.WebApp) {
         this.isTelegram = false;
         return;
       }
@@ -25,14 +22,6 @@
       this.platform = this.tg.platform || "";
       this.version = this.tg.version || "";
 
-      /*
-       * initDataUnsafe используется здесь только
-       * для локального отображения/контекста.
-       *
-       * Для авторизации на сервере в будущем
-       * будет использоваться только initData
-       * после серверной проверки.
-       */
       if (
         this.tg.initDataUnsafe &&
         this.tg.initDataUnsafe.user
@@ -48,6 +37,18 @@
 
       this.applyTheme();
       this.bindEvents();
+
+      this.diagnostic();
+    },
+
+    diagnostic: function () {
+      console.log("[SYSTeM Telegram]");
+      console.log("Telegram:", this.isTelegram);
+      console.log("Platform:", this.platform);
+      console.log("Version:", this.version);
+      console.log("User ID:", this.getUserId());
+      console.log("Language:", this.getLanguageCode());
+      console.log("initData:", this.initData ? "RECEIVED" : "EMPTY");
     },
 
     applyTheme: function () {
@@ -57,10 +58,7 @@
       const theme = this.tg.themeParams || {};
 
       if (theme.bg_color) {
-        root.style.setProperty(
-          "--tg-bg-color",
-          theme.bg_color
-        );
+        root.style.setProperty("--tg-bg-color", theme.bg_color);
       }
 
       if (theme.secondary_bg_color) {
@@ -71,17 +69,11 @@
       }
 
       if (theme.text_color) {
-        root.style.setProperty(
-          "--tg-text-color",
-          theme.text_color
-        );
+        root.style.setProperty("--tg-text-color", theme.text_color);
       }
 
       if (theme.hint_color) {
-        root.style.setProperty(
-          "--tg-hint-color",
-          theme.hint_color
-        );
+        root.style.setProperty("--tg-hint-color", theme.hint_color);
       }
     },
 
@@ -93,9 +85,7 @@
           "themeChanged",
           () => this.applyTheme()
         );
-      }
 
-      if (typeof this.tg.onEvent === "function") {
         this.tg.onEvent(
           "viewportChanged",
           () => {
@@ -145,30 +135,21 @@
     },
 
     haptic: function (type) {
-      if (
-        !this.tg ||
-        !this.tg.HapticFeedback
-      ) {
+      if (!this.tg || !this.tg.HapticFeedback) {
         return;
       }
 
       if (type === "success") {
-        this.tg.HapticFeedback.notificationOccurred(
-          "success"
-        );
+        this.tg.HapticFeedback.notificationOccurred("success");
         return;
       }
 
       if (type === "error") {
-        this.tg.HapticFeedback.notificationOccurred(
-          "error"
-        );
+        this.tg.HapticFeedback.notificationOccurred("error");
         return;
       }
 
-      this.tg.HapticFeedback.impactOccurred(
-        type || "light"
-      );
+      this.tg.HapticFeedback.impactOccurred(type || "light");
     },
 
     hideMainButton: function () {
