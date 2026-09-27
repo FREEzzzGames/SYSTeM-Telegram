@@ -12,6 +12,7 @@
     init: function () {
       if (!window.Telegram || !window.Telegram.WebApp) {
         this.isTelegram = false;
+        this.showDiagnostic();
         return;
       }
 
@@ -37,40 +38,33 @@
 
       this.applyTheme();
       this.bindEvents();
-      this.diagnostic();
+      this.showDiagnostic();
     },
 
-    diagnostic: function () {
-      console.log("[SYSTeM Telegram]");
-      console.log("Telegram:", this.isTelegram);
-      console.log("Platform:", this.platform);
-      console.log("Version:", this.version);
-      console.log("User ID:", this.getUserId());
-      console.log("Language:", this.getLanguageCode());
-      console.log(
-        "initData:",
-        this.initData ? "RECEIVED" : "EMPTY"
-      );
+    showDiagnostic: function () {
+      const addLog = function () {
+        const log = document.getElementById("system-log");
 
-      if (
-        this.tg &&
-        typeof this.tg.showAlert === "function"
-      ) {
-        this.tg.showAlert(
-          "SYSTeM TELEGRAM\n\n" +
-          "Telegram: " +
-          (this.isTelegram ? "YES" : "NO") +
-          "\n" +
-          "User ID: " +
-          (this.getUserId() || "NOT FOUND") +
-          "\n" +
-          "Language: " +
-          (this.getLanguageCode() || "NOT FOUND") +
-          "\n" +
-          "initData: " +
-          (this.initData ? "RECEIVED" : "EMPTY")
-        );
-      }
+        if (!log) {
+          setTimeout(addLog, 100);
+          return;
+        }
+
+        const telegramLine = document.createElement("div");
+        telegramLine.textContent =
+          "> TELEGRAM: " +
+          (TelegramApp.isTelegram ? "YES" : "NO");
+
+        const dataLine = document.createElement("div");
+        dataLine.textContent =
+          "> INIT DATA: " +
+          (TelegramApp.initData ? "RECEIVED" : "EMPTY");
+
+        log.appendChild(telegramLine);
+        log.appendChild(dataLine);
+      };
+
+      addLog();
     },
 
     applyTheme: function () {
