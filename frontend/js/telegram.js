@@ -37,7 +37,6 @@
 
       this.applyTheme();
       this.bindEvents();
-
       this.diagnostic();
     },
 
@@ -48,7 +47,30 @@
       console.log("Version:", this.version);
       console.log("User ID:", this.getUserId());
       console.log("Language:", this.getLanguageCode());
-      console.log("initData:", this.initData ? "RECEIVED" : "EMPTY");
+      console.log(
+        "initData:",
+        this.initData ? "RECEIVED" : "EMPTY"
+      );
+
+      if (
+        this.tg &&
+        typeof this.tg.showAlert === "function"
+      ) {
+        this.tg.showAlert(
+          "SYSTeM TELEGRAM\n\n" +
+          "Telegram: " +
+          (this.isTelegram ? "YES" : "NO") +
+          "\n" +
+          "User ID: " +
+          (this.getUserId() || "NOT FOUND") +
+          "\n" +
+          "Language: " +
+          (this.getLanguageCode() || "NOT FOUND") +
+          "\n" +
+          "initData: " +
+          (this.initData ? "RECEIVED" : "EMPTY")
+        );
+      }
     },
 
     applyTheme: function () {
@@ -58,7 +80,10 @@
       const theme = this.tg.themeParams || {};
 
       if (theme.bg_color) {
-        root.style.setProperty("--tg-bg-color", theme.bg_color);
+        root.style.setProperty(
+          "--tg-bg-color",
+          theme.bg_color
+        );
       }
 
       if (theme.secondary_bg_color) {
@@ -69,11 +94,17 @@
       }
 
       if (theme.text_color) {
-        root.style.setProperty("--tg-text-color", theme.text_color);
+        root.style.setProperty(
+          "--tg-text-color",
+          theme.text_color
+        );
       }
 
       if (theme.hint_color) {
-        root.style.setProperty("--tg-hint-color", theme.hint_color);
+        root.style.setProperty(
+          "--tg-hint-color",
+          theme.hint_color
+        );
       }
     },
 
@@ -135,21 +166,30 @@
     },
 
     haptic: function (type) {
-      if (!this.tg || !this.tg.HapticFeedback) {
+      if (
+        !this.tg ||
+        !this.tg.HapticFeedback
+      ) {
         return;
       }
 
       if (type === "success") {
-        this.tg.HapticFeedback.notificationOccurred("success");
+        this.tg.HapticFeedback.notificationOccurred(
+          "success"
+        );
         return;
       }
 
       if (type === "error") {
-        this.tg.HapticFeedback.notificationOccurred("error");
+        this.tg.HapticFeedback.notificationOccurred(
+          "error"
+        );
         return;
       }
 
-      this.tg.HapticFeedback.impactOccurred(type || "light");
+      this.tg.HapticFeedback.impactOccurred(
+        type || "light"
+      );
     },
 
     hideMainButton: function () {
