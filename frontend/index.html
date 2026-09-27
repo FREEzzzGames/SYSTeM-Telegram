@@ -12,7 +12,7 @@
 
     <meta
         name="theme-color"
-        content="#070b09"
+        content="#050705"
     >
 
     <meta
@@ -33,16 +33,12 @@
     <title>SYSTeM</title>
 
 
-    <!-- =====================================================
-         TELEGRAM MINI APP SDK
-         ===================================================== -->
+    <!-- Telegram Mini App SDK -->
 
     <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
 
-    <!-- =====================================================
-         SYSTEM CSS
-         ===================================================== -->
+    <!-- SYSTeM CSS -->
 
     <link
         rel="stylesheet"
@@ -56,19 +52,19 @@
 
 
     <!-- =====================================================
-         LANGUAGE SWITCHER
+         LANGUAGE
          ===================================================== -->
 
     <div
         id="language-switcher"
         class="language-switcher"
-        aria-label="Language"
     >
 
         <button
             type="button"
             class="language-button"
             data-language="ru"
+            aria-pressed="true"
         >
             RU
         </button>
@@ -77,6 +73,7 @@
             type="button"
             class="language-button"
             data-language="de"
+            aria-pressed="false"
         >
             DE
         </button>
@@ -85,6 +82,7 @@
             type="button"
             class="language-button"
             data-language="en"
+            aria-pressed="false"
         >
             EN
         </button>
@@ -93,226 +91,234 @@
 
 
     <!-- =====================================================
-         MAIN SYSTEM
+         APP
          ===================================================== -->
 
-    <main class="system">
+    <div id="app">
+
+        <main class="system">
 
 
-        <!-- =================================================
-             HEADER
-             ================================================= -->
+            <!-- =================================================
+                 HEADER
+                 ================================================= -->
 
-        <header class="system-header">
+            <header class="system-header">
 
-            <div>
+                <div>
 
-                <div
-                    class="system-name"
-                    data-i18n="system.name"
-                >
-                    SYSTeM
+                    <div
+                        class="system-name"
+                        data-i18n="system.name"
+                    >
+                        SYSTeM
+                    </div>
+
+                    <div
+                        class="system-meta"
+                        data-i18n="system.version"
+                    >
+                        CORE // v0.1.3
+                    </div>
+
                 </div>
 
-                <div
-                    class="system-meta version"
-                    data-i18n="system.version"
-                >
-                    CORE // v0.1.3
+
+                <div class="system-meta">
+
+                    <div class="online">
+
+                        <span class="status-dot"></span>
+
+                        <span
+                            data-i18n="system.online"
+                        >
+                            ONLINE
+                        </span>
+
+                    </div>
+
+                    <div
+                        data-i18n="system.user"
+                    >
+                        USER: UNKNOWN
+                    </div>
+
                 </div>
 
-            </div>
+            </header>
 
 
-            <div class="system-meta">
+            <!-- =================================================
+                 STATUS
+                 ================================================= -->
 
-                <div class="online">
+            <section class="panel status-panel">
 
-                    <span class="status-dot"></span>
+                <div
+                    class="panel-title"
+                    data-i18n="status.title"
+                >
+                    SYSTEM STATUS
+                </div>
 
-                    <span data-i18n="system.online">
-                        ONLINE
+
+                <div class="status-row">
+
+                    <span
+                        class="status-label"
+                        data-i18n="status.state"
+                    >
+                        STATE
+                    </span>
+
+                    <span
+                        class="status-value"
+                        data-i18n="status.ready"
+                    >
+                        READY
                     </span>
 
                 </div>
 
-                <div data-i18n="system.user">
-                    USER: UNKNOWN
+
+                <div class="status-row">
+
+                    <span
+                        class="status-label"
+                        data-i18n="status.purpose"
+                    >
+                        PURPOSE
+                    </span>
+
+                    <span
+                        class="status-value"
+                        data-i18n="status.unknown"
+                    >
+                        UNKNOWN
+                    </span>
+
                 </div>
 
-            </div>
 
-        </header>
+                <div class="status-row">
 
+                    <span
+                        class="status-label"
+                        data-i18n="status.connection"
+                    >
+                        CONNECTION
+                    </span>
 
-        <!-- =================================================
-             STATUS PANEL
-             ================================================= -->
+                    <span
+                        class="status-value"
+                        data-i18n="status.local"
+                    >
+                        LOCAL
+                    </span>
 
-        <section class="panel status-panel">
-
-
-            <div
-                class="panel-title"
-                data-i18n="status.title"
-            >
-                SYSTEM STATUS
-            </div>
-
-
-            <div class="status-row">
-
-                <div
-                    class="status-label"
-                    data-i18n="status.state"
-                >
-                    STATE
                 </div>
 
+            </section>
+
+
+            <!-- =================================================
+                 PROCESS
+                 ================================================= -->
+
+            <section class="panel process-panel">
+
                 <div
-                    class="status-value"
-                    data-i18n="status.ready"
+                    class="panel-title"
+                    data-i18n="process.title"
                 >
-                    READY
+                    PRIMARY PROCESS
                 </div>
 
-            </div>
+
+                <div class="process-content">
+
+                    <div
+                        class="resource-label"
+                        data-i18n="resource.available"
+                    >
+                        AVAILABLE RESOURCE
+                    </div>
 
 
-            <div class="status-row">
+                    <div
+                        id="resource-value"
+                        class="resource-value"
+                    >
+                        000000
+                    </div>
 
-                <div
-                    class="status-label"
-                    data-i18n="status.purpose"
-                >
-                    PURPOSE
+
+                    <button
+                        id="process-button"
+                        class="process-button"
+                        type="button"
+                        data-i18n="process.button"
+                    >
+                        [ PROCESS ]
+                    </button>
+
                 </div>
 
-                <div
-                    class="status-value"
-                    data-i18n="status.unknown"
-                >
-                    UNKNOWN
-                </div>
-
-            </div>
+            </section>
 
 
-            <div class="status-row">
+            <!-- =================================================
+                 LOG
+                 ================================================= -->
+
+            <section class="panel log-panel">
 
                 <div
-                    class="status-label"
-                    data-i18n="status.connection"
+                    class="panel-title"
+                    data-i18n="log.title"
                 >
-                    CONNECTION
-                </div>
-
-                <div
-                    class="status-value"
-                    data-i18n="status.local"
-                >
-                    LOCAL
-                </div>
-
-            </div>
-
-
-        </section>
-
-
-        <!-- =================================================
-             PROCESS PANEL
-             ================================================= -->
-
-        <section class="panel process-panel">
-
-
-            <div
-                class="panel-title"
-                data-i18n="process.title"
-            >
-                PRIMARY PROCESS
-            </div>
-
-
-            <div class="process-content">
-
-
-                <div
-                    class="resource-label"
-                    data-i18n="resource.available"
-                >
-                    AVAILABLE RESOURCE
+                    SYSTEM LOG
                 </div>
 
 
                 <div
-                    id="resource-value"
-                    class="resource-value"
+                    id="system-log"
+                    class="system-log"
+                    aria-live="polite"
+                ></div>
+
+            </section>
+
+
+            <!-- =================================================
+                 FOOTER
+                 ================================================= -->
+
+            <footer class="system-footer">
+
+                <span
+                    data-i18n="footer.system"
                 >
-                    000000
-                </div>
+                    SYSTeM
+                </span>
 
+                <span>
+                    //
+                </span>
 
-                <button
-                    id="process-button"
-                    class="process-button"
-                    type="button"
-                    data-i18n="process.button"
+                <span
+                    data-i18n="footer.prototype"
                 >
-                    [ PROCESS ]
-                </button>
+                    PROTOTYPE
+                </span>
+
+            </footer>
 
 
-            </div>
+        </main>
 
-
-        </section>
-
-
-        <!-- =================================================
-             SYSTEM LOG
-             ================================================= -->
-
-        <section class="panel log-panel">
-
-
-            <div
-                class="panel-title"
-                data-i18n="log.title"
-            >
-                SYSTEM LOG
-            </div>
-
-
-            <div
-                id="system-log"
-                class="system-log"
-                aria-live="polite"
-            ></div>
-
-
-        </section>
-
-
-        <!-- =================================================
-             FOOTER
-             ================================================= -->
-
-        <footer class="system-footer">
-
-            <span data-i18n="footer.system">
-                SYSTeM
-            </span>
-
-            <span data-i18n="footer.prototype">
-                PROTOTYPE
-            </span>
-
-        </footer>
-
-
-    </main>
+    </div>
 
 
     <!-- =====================================================
@@ -323,11 +329,7 @@
 
     <script src="./js/telegram.js"></script>
 
-
-    <!--
-        system.js will be connected in the next step.
-        Do NOT add it yet.
-    -->
+    <script src="./js/system.js"></script>
 
 
 </body>
