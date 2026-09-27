@@ -1,338 +1,208 @@
-/* =========================================================
-   SYSTeM — Telegram Mini App
-   TELEGRAM.JS
-   Step 4 — Telegram Foundation
-   ========================================================= */
-
 (function () {
-    "use strict";
+  "use strict";
 
-    const TelegramApp = {
+  const TelegramApp = {
+    tg: null,
+    isTelegram: false,
+    initData: "",
+    user: null,
+    platform: "",
+    version: "",
 
-        tg: null,
+    init: function () {
+      if (
+        !window.Telegram ||
+        !window.Telegram.WebApp
+      ) {
+        this.isTelegram = false;
+        return;
+      }
 
-        isTelegram: false,
+      this.tg = window.Telegram.WebApp;
+      this.isTelegram = true;
 
-        initData: "",
+      this.initData = this.tg.initData || "";
+      this.platform = this.tg.platform || "";
+      this.version = this.tg.version || "";
 
-        user: null,
+      /*
+       * initDataUnsafe используется здесь только
+       * для локального отображения/контекста.
+       *
+       * Для авторизации на сервере в будущем
+       * будет использоваться только initData
+       * после серверной проверки.
+       */
+      if (
+        this.tg.initDataUnsafe &&
+        this.tg.initDataUnsafe.user
+      ) {
+        this.user = this.tg.initDataUnsafe.user;
+      }
 
-        platform: null,
+      this.tg.ready();
 
-        version: null,
+      if (typeof this.tg.expand === "function") {
+        this.tg.expand();
+      }
 
+      this.applyTheme();
+      this.bindEvents();
+    },
 
-        /* =====================================================
-           INITIALIZATION
-           ===================================================== */
+    applyTheme: function () {
+      if (!this.tg) return;
 
-        init() {
+      const root = document.documentElement;
+      const theme = this.tg.themeParams || {};
 
-            if (
-                typeof window === "undefined" ||
-                !window.Telegram ||
-                !window.Telegram.WebApp
-            ) {
-                this.isTelegram = false;
+      if (theme.bg_color) {
+        root.style.setProperty(
+          "--tg-bg-color",
+          theme.bg_color
+        );
+      }
 
-                console.log(
-                    "[Telegram] WebApp API not available."
-                );
+      if (theme.secondary_bg_color) {
+        root.style.setProperty(
+          "--tg-secondary-bg-color",
+          theme.secondary_bg_color
+        );
+      }
 
-                return this;
-            }
+      if (theme.text_color) {
+        root.style.setProperty(
+          "--tg-text-color",
+          theme.text_color
+        );
+      }
 
-            this.tg = window.Telegram.WebApp;
+      if (theme.hint_color) {
+        root.style.setProperty(
+          "--tg-hint-color",
+          theme.hint_color
+        );
+      }
+    },
 
-            this.isTelegram = true;
+    bindEvents: function () {
+      if (!this.tg) return;
 
-            this.initData = this.tg.initData || "";
+      if (typeof this.tg.onEvent === "function") {
+        this.tg.onEvent(
+          "themeChanged",
+          () => this.applyTheme()
+        );
+      }
 
-            this.platform = this.tg.platform || null;
-
-            this.version = this.tg.version || null;
-
-
-            /* =================================================
-               CLIENT USER INFORMATION
-
-               IMPORTANT:
-               initDataUnsafe is NOT trusted authentication data.
-
-               It is used here only for local UI/context.
-               The backend will later validate initData.
-               ================================================= */
-
-            if (
-                this.tg.initDataUnsafe &&
-                this.tg.initDataUnsafe.user
-            ) {
-                this.user =
-                    this.tg.initDataUnsafe.user;
-            }
-
-
-            /* =================================================
-               TELEGRAM READY
-               ================================================= */
-
-            if (
-                typeof this.tg.ready === "function"
-            ) {
-                this.tg.ready();
-            }
-
-
-            /* =================================================
-               EXPAND MINI APP
-               ================================================= */
-
-            if (
-                typeof this.tg.expand === "function"
-            ) {
-                this.tg.expand();
-            }
-
-
-            /* =================================================
-               DEBUG INFORMATION
-               ================================================= */
-
-            console.log(
-                "[Telegram] WebApp initialized."
+      if (typeof this.tg.onEvent === "function") {
+        this.tg.onEvent(
+          "viewportChanged",
+          () => {
+            document.documentElement.style.setProperty(
+              "--tg-viewport-height",
+              this.tg.viewportStableHeight + "px"
             );
-
-            console.log(
-                "[Telegram] Platform:",
-                this.platform
-            );
-
-            console.log(
-                "[Telegram] Version:",
-                this.version
-            );
-
-            console.log(
-                "[Telegram] User:",
-                this.user
-                    ? {
-                        id: this.user.id,
-                        username:
-                            this.user.username || null,
-                        language_code:
-                            this.user.language_code || null
-                    }
-                    : null
-            );
-
-
-            return this;
-        },
-
-
-        /* =====================================================
-           ENVIRONMENT
-           ===================================================== */
-
-        isAvailable() {
-            return this.isTelegram;
-        },
-
-
-        /* =====================================================
-           USER
-           ===================================================== */
-
-        getUser() {
-            return this.user;
-        },
-
-
-        getUserId() {
-
-            if (!this.user) {
-                return null;
-            }
-
-            return this.user.id || null;
-        },
-
-
-        getLanguageCode() {
-
-            if (!this.user) {
-                return null;
-            }
-
-            return this.user.language_code || null;
-        },
-
-
-        /* =====================================================
-           AUTH DATA
-           ===================================================== */
-
-        getInitData() {
-            return this.initData;
-        },
-
-
-        /* =====================================================
-           THEME
-           ===================================================== */
-
-        getThemeParams() {
-
-            if (!this.tg) {
-                return null;
-            }
-
-            return this.tg.themeParams || null;
-        },
-
-
-        /* =====================================================
-           VIEWPORT
-           ===================================================== */
-
-        getViewportHeight() {
-
-            if (!this.tg) {
-                return window.innerHeight;
-            }
-
-            return (
-                this.tg.viewportStableHeight ||
-                this.tg.viewportHeight ||
-                window.innerHeight
-            );
-        },
-
-
-        /* =====================================================
-           MAIN BUTTON
-           ===================================================== */
-
-        hideMainButton() {
-
-            if (
-                this.tg &&
-                this.tg.MainButton &&
-                typeof this.tg.MainButton.hide === "function"
-            ) {
-                this.tg.MainButton.hide();
-            }
-        },
-
-
-        /* =====================================================
-           BACK BUTTON
-           ===================================================== */
-
-        hideBackButton() {
-
-            if (
-                this.tg &&
-                this.tg.BackButton &&
-                typeof this.tg.BackButton.hide === "function"
-            ) {
-                this.tg.BackButton.hide();
-            }
-        },
-
-
-        /* =====================================================
-           HAPTIC FEEDBACK
-           ===================================================== */
-
-        haptic(type) {
-
-            if (
-                !this.tg ||
-                !this.tg.HapticFeedback
-            ) {
-                return;
-            }
-
-            try {
-
-                if (type === "success") {
-
-                    this.tg.HapticFeedback
-                        .notificationOccurred(
-                            "success"
-                        );
-
-                    return;
-                }
-
-
-                if (type === "error") {
-
-                    this.tg.HapticFeedback
-                        .notificationOccurred(
-                            "error"
-                        );
-
-                    return;
-                }
-
-
-                if (type === "warning") {
-
-                    this.tg.HapticFeedback
-                        .notificationOccurred(
-                            "warning"
-                        );
-
-                    return;
-                }
-
-
-                this.tg.HapticFeedback
-                    .impactOccurred("light");
-
-            } catch (error) {
-
-                console.warn(
-                    "[Telegram] Haptic error:",
-                    error
-                );
-            }
-        },
-
-
-        /* =====================================================
-           CLOSE MINI APP
-           ===================================================== */
-
-        close() {
-
-            if (
-                this.tg &&
-                typeof this.tg.close === "function"
-            ) {
-                this.tg.close();
-            }
-        }
-    };
-
-
-    /* =========================================================
-       INITIALIZE
-       ========================================================= */
-
-    TelegramApp.init();
-
-
-    /* =========================================================
-       PUBLIC SYSTeM API
-       ========================================================= */
-
-    window.SYSTeM =
-        window.SYSTeM || {};
-
-    window.SYSTeM.Telegram =
-        TelegramApp;
-
+          }
+        );
+      }
+    },
+
+    isAvailable: function () {
+      return this.isTelegram;
+    },
+
+    getUser: function () {
+      return this.user;
+    },
+
+    getUserId: function () {
+      return this.user ? this.user.id : null;
+    },
+
+    getLanguageCode: function () {
+      return this.user
+        ? this.user.language_code || null
+        : null;
+    },
+
+    getInitData: function () {
+      return this.initData;
+    },
+
+    getThemeParams: function () {
+      return this.tg
+        ? this.tg.themeParams || {}
+        : {};
+    },
+
+    getViewportHeight: function () {
+      return this.tg
+        ? this.tg.viewportStableHeight ||
+          this.tg.viewportHeight ||
+          0
+        : 0;
+    },
+
+    haptic: function (type) {
+      if (
+        !this.tg ||
+        !this.tg.HapticFeedback
+      ) {
+        return;
+      }
+
+      if (type === "success") {
+        this.tg.HapticFeedback.notificationOccurred(
+          "success"
+        );
+        return;
+      }
+
+      if (type === "error") {
+        this.tg.HapticFeedback.notificationOccurred(
+          "error"
+        );
+        return;
+      }
+
+      this.tg.HapticFeedback.impactOccurred(
+        type || "light"
+      );
+    },
+
+    hideMainButton: function () {
+      if (
+        this.tg &&
+        this.tg.MainButton &&
+        typeof this.tg.MainButton.hide === "function"
+      ) {
+        this.tg.MainButton.hide();
+      }
+    },
+
+    hideBackButton: function () {
+      if (
+        this.tg &&
+        this.tg.BackButton &&
+        typeof this.tg.BackButton.hide === "function"
+      ) {
+        this.tg.BackButton.hide();
+      }
+    },
+
+    close: function () {
+      if (
+        this.tg &&
+        typeof this.tg.close === "function"
+      ) {
+        this.tg.close();
+      }
+    }
+  };
+
+  window.SYSTeM = window.SYSTeM || {};
+  window.SYSTeM.Telegram = TelegramApp;
+
+  TelegramApp.init();
 })();
