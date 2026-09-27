@@ -1,0 +1,366 @@
+/* =========================================================
+   SYSTeM — Telegram Frontend
+   SYSTEM.CSS
+   Step 2 — Visual Foundation
+   ========================================================= */
+
+:root {
+    --bg: #050705;
+    --panel: #080b08;
+    --panel-soft: #0b0f0b;
+
+    --text: #b7c7b7;
+    --text-bright: #d7e5d7;
+    --text-dim: #687468;
+
+    --accent: #79ff79;
+    --accent-dim: #3f8f3f;
+
+    --border: #283228;
+    --border-bright: #3f513f;
+
+    --danger: #ff6969;
+
+    --font-main:
+        "Courier New",
+        Courier,
+        monospace;
+
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+
+    font-family: var(--font-main);
+    font-size: 14px;
+
+    overflow: hidden;
+
+    -webkit-font-smoothing: none;
+    text-rendering: geometricPrecision;
+
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+#app {
+    width: 100%;
+    height: 100%;
+
+    min-height: 100dvh;
+
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+
+    padding:
+        var(--safe-top)
+        0
+        var(--safe-bottom);
+}
+
+
+/* =========================================================
+   SYSTEM CONTAINER
+   ========================================================= */
+
+.system {
+    position: relative;
+
+    width: 100%;
+    max-width: 720px;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    background:
+        linear-gradient(
+            rgba(255, 255, 255, 0.012) 50%,
+            rgba(0, 0, 0, 0.012) 50%
+        ),
+        var(--bg);
+
+    background-size: 100% 4px;
+
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.system-header {
+    flex: 0 0 auto;
+
+    min-height: 54px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px 16px;
+
+    border-bottom: 1px solid var(--border);
+
+    color: var(--text-bright);
+
+    font-size: 18px;
+    font-weight: bold;
+
+    letter-spacing: 0.16em;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.system-status {
+    flex: 0 0 auto;
+
+    min-height: 38px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 8px 16px;
+
+    border-bottom: 1px solid var(--border);
+
+    color: var(--text-dim);
+
+    font-size: 11px;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.system-content {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    padding: 18px 16px;
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+
+/* =========================================================
+   TERMINAL
+   ========================================================= */
+
+.terminal-line {
+    min-height: 20px;
+
+    color: var(--text);
+
+    font-size: 13px;
+    line-height: 1.5;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.terminal-line::selection {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+
+/* =========================================================
+   SUBTLE CRT EFFECT
+   ========================================================= */
+
+.system::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 3px,
+            rgba(255, 255, 255, 0.012) 4px
+        );
+
+    opacity: 0.35;
+}
+
+
+/* =========================================================
+   TELEGRAM MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .system {
+        border-left: 0;
+        border-right: 0;
+    }
+
+    .system-header {
+        min-height: 50px;
+
+        padding-left: 12px;
+        padding-right: 12px;
+
+        font-size: 16px;
+    }
+
+    .system-status {
+        min-height: 34px;
+
+        padding-left: 12px;
+        padding-right: 12px;
+
+        font-size: 10px;
+    }
+
+    .system-content {
+        padding: 14px 12px;
+    }
+
+    .terminal-line {
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================================
+   SHORT MOBILE SCREENS
+   ========================================================= */
+
+@media (max-height: 700px) {
+
+    .system-header {
+        min-height: 44px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+
+    .system-status {
+        min-height: 30px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .system-content {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        gap: 5px;
+    }
+}
+
+
+/* =========================================================
+   VERY SHORT SCREENS
+   ========================================================= */
+
+@media (max-height: 560px) {
+
+    .system-header {
+        min-height: 38px;
+    }
+
+    .system-status {
+        min-height: 26px;
+    }
+
+    .system-content {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+
+    .terminal-line {
+        font-size: 11px;
+    }
+}
+
+
+/* =========================================================
+   LANDSCAPE
+   ========================================================= */
+
+@media (orientation: landscape) and (max-height: 500px) {
+
+    .system {
+        max-width: 900px;
+    }
+
+    .system-header {
+        min-height: 40px;
+    }
+
+    .system-status {
+        min-height: 28px;
+    }
+
+    .system-content {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
