@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -8,53 +10,326 @@
         content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
 
+    <meta
+        name="theme-color"
+        content="#070b09"
+    >
+
+    <meta
+        name="mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+    >
+
     <title>SYSTeM</title>
 
-    <!-- Telegram Mini App SDK -->
+
+    <!-- =====================================================
+         TELEGRAM MINI APP SDK
+         ===================================================== -->
+
     <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
 
-    <!-- SYSTeM styles -->
-    <link rel="stylesheet" href="./css/system.css">
+
+    <!-- =====================================================
+         SYSTEM CSS
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="./css/system.css"
+    >
+
 </head>
+
 
 <body>
 
-    <main id="app">
 
-        <div class="system">
+    <!-- =====================================================
+         LANGUAGE SWITCHER
+         ===================================================== -->
 
-            <div class="system-header">
+    <div
+        id="language-switcher"
+        class="language-switcher"
+        aria-label="Language"
+    >
+
+        <button
+            type="button"
+            class="language-button"
+            data-language="ru"
+        >
+            RU
+        </button>
+
+        <button
+            type="button"
+            class="language-button"
+            data-language="de"
+        >
+            DE
+        </button>
+
+        <button
+            type="button"
+            class="language-button"
+            data-language="en"
+        >
+            EN
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN SYSTEM
+         ===================================================== -->
+
+    <main class="system">
+
+
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+
+        <header class="system-header">
+
+            <div>
+
+                <div
+                    class="system-name"
+                    data-i18n="system.name"
+                >
+                    SYSTeM
+                </div>
+
+                <div
+                    class="system-meta version"
+                    data-i18n="system.version"
+                >
+                    CORE // v0.1.3
+                </div>
+
+            </div>
+
+
+            <div class="system-meta">
+
+                <div class="online">
+
+                    <span class="status-dot"></span>
+
+                    <span data-i18n="system.online">
+                        ONLINE
+                    </span>
+
+                </div>
+
+                <div data-i18n="system.user">
+                    USER: UNKNOWN
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             STATUS PANEL
+             ================================================= -->
+
+        <section class="panel status-panel">
+
+
+            <div
+                class="panel-title"
+                data-i18n="status.title"
+            >
+                SYSTEM STATUS
+            </div>
+
+
+            <div class="status-row">
+
+                <div
+                    class="status-label"
+                    data-i18n="status.state"
+                >
+                    STATE
+                </div>
+
+                <div
+                    class="status-value"
+                    data-i18n="status.ready"
+                >
+                    READY
+                </div>
+
+            </div>
+
+
+            <div class="status-row">
+
+                <div
+                    class="status-label"
+                    data-i18n="status.purpose"
+                >
+                    PURPOSE
+                </div>
+
+                <div
+                    class="status-value"
+                    data-i18n="status.unknown"
+                >
+                    UNKNOWN
+                </div>
+
+            </div>
+
+
+            <div class="status-row">
+
+                <div
+                    class="status-label"
+                    data-i18n="status.connection"
+                >
+                    CONNECTION
+                </div>
+
+                <div
+                    class="status-value"
+                    data-i18n="status.local"
+                >
+                    LOCAL
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             PROCESS PANEL
+             ================================================= -->
+
+        <section class="panel process-panel">
+
+
+            <div
+                class="panel-title"
+                data-i18n="process.title"
+            >
+                PRIMARY PROCESS
+            </div>
+
+
+            <div class="process-content">
+
+
+                <div
+                    class="resource-label"
+                    data-i18n="resource.available"
+                >
+                    AVAILABLE RESOURCE
+                </div>
+
+
+                <div
+                    id="resource-value"
+                    class="resource-value"
+                >
+                    000000
+                </div>
+
+
+                <button
+                    id="process-button"
+                    class="process-button"
+                    type="button"
+                    data-i18n="process.button"
+                >
+                    [ PROCESS ]
+                </button>
+
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             SYSTEM LOG
+             ================================================= -->
+
+        <section class="panel log-panel">
+
+
+            <div
+                class="panel-title"
+                data-i18n="log.title"
+            >
+                SYSTEM LOG
+            </div>
+
+
+            <div
+                id="system-log"
+                class="system-log"
+                aria-live="polite"
+            ></div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             FOOTER
+             ================================================= -->
+
+        <footer class="system-footer">
+
+            <span data-i18n="footer.system">
                 SYSTeM
-            </div>
+            </span>
 
-            <div class="system-status">
-                INITIALIZING...
-            </div>
+            <span data-i18n="footer.prototype">
+                PROTOTYPE
+            </span>
 
-            <div class="system-content">
+        </footer>
 
-                <div class="terminal-line">
-                    &gt; SYSTEM ONLINE
-                </div>
-
-                <div class="terminal-line">
-                    &gt; WAITING FOR INPUT
-                </div>
-
-            </div>
-
-        </div>
 
     </main>
 
-    <!-- Localization -->
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
     <script src="./js/locales.js"></script>
 
-    <!-- Telegram integration -->
     <script src="./js/telegram.js"></script>
 
-    <!-- Game core -->
-    <script src="./js/system.js"></script>
+
+    <!--
+        system.js will be connected in the next step.
+        Do NOT add it yet.
+    -->
+
 
 </body>
+
 </html>
