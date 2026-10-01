@@ -46,7 +46,14 @@ def choose_persona(text: str) -> str:
 
 def should_answer(message: Message) -> bool:
     text = message.text or ""
-    if not text.strip() or text.startswith("/"):
+    if not text.strip():
+        return False
+
+    # In a private chat the user is explicitly talking to the bot.
+    if message.chat.type == "private":
+        return not text.startswith("/")
+
+    if text.startswith("/"):
         return False
 
     if message.reply_to_message and message.reply_to_message.from_user:
