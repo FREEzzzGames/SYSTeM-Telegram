@@ -1,6 +1,6 @@
 import asyncio
 import os
-from collections import defaultdict
+from collections import deque
 
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F
@@ -35,6 +35,26 @@ engine = ChatEngine(
 )
 dialogue_tasks = {}
 
+# Webhook delivery is normally at-least-once. Keep a small in-memory
+# idempotency window so a retried Telegram update cannot create duplicate
+# persona replies during the same service lifetime.
+SEEN_UPDATE_LIMIT = 2000
+seen_update_ids = set()
+seen_update_order = deque(maxlen=SEEN_UPDATE_LIMIT)
+
+
+def remember_update(update_id: int) -> bool:
+    if update_id in seen_update_ids:
+        return False
+
+    if len(seen_update_order) >= SEEN_UPDATE_LIMIT:
+        old_id = seen_update_order.popleft()
+        seen_update_ids.discard(old_id)
+
+    seen_update_order.append(update_id)
+    seen_update_ids.add(update_id)
+    return True
+
 
 def is_user_message(message: Message) -> bool:
     return bool(
@@ -62,8 +82,6 @@ def should_answer(message: Message) -> bool:
             and message.reply_to_message.from_user.is_bot
         )
 
-    # In the community group every normal human text can enter the scripted
-    # conversation. A new human message always cancels a pending persona chain.
     return True
 
 
@@ -91,7 +109,6 @@ async def run_dialogue(chat_id, turns):
     try:
         for turn in turns:
             await asyncio.sleep(turn.delay)
-            # The task is cancelled immediately when a human sends a new message.
             await publish_turn(chat_id, turn)
     except asyncio.CancelledError:
         print(f"CHAT_CHAIN_CANCELLED chat={chat_id}")
@@ -136,10 +153,30 @@ async def on_message(message: Message):
 async def telegram_webhook(request: web.Request):
     secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
     if secret != WEBHOOK_SECRET:
+        print("WEBHOOK_REJECTED reason=invalid_secret")
         return web.Response(status=403)
 
     try:
         data = await request.json()
+        update_id = data.get("update_id")
+        message = data.get("message") or {}
+        chat = message.get("chat") or {}
+        user = message.get("from") or {}
+
+        print(
+            "WEBHOOK_UPDATE "
+            f"update_id={update_id} "
+            f"chat_id={chat.get('id')} "
+            f"chat_type={chat.get('type')} "
+            f"user_id={user.get('id')} "
+            f"is_bot={user.get('is_bot')} "
+            f"has_text={bool(message.get('text'))}"
+        )
+
+        if isinstance(update_id, int) and not remember_update(update_id):
+            print(f"WEBHOOK_DUPLICATE update_id={update_id}")
+            return web.Response(status=200)
+
         update = Update.model_validate(data)
         await dp.feed_update(bot, update)
         return web.Response(status=200)
@@ -182,10 +219,21 @@ async def start_server():
     )
 
     info = await bot.get_webhook_info()
+    me = await bot.get_me()
+
+    print(
+        "BOT_IDENTITY "
+        f"id={me.id} username=@{me.username or '<none>'} "
+        f"can_join_groups={me.can_join_groups} "
+        f"can_read_all_group_messages={me.can_read_all_group_messages}"
+    )
     print(
         "WEBHOOK_READY "
         f"url={info.url or '<empty>'} "
-        f"pending={info.pending_update_count}"
+        f"pending={info.pending_update_count} "
+        f"last_error_date={info.last_error_date} "
+        f"last_error_message={info.last_error_message or '<none>'} "
+        f"max_connections={info.max_connections}"
     )
     print(f"CHAT_SERVER_READY port={port}")
 
