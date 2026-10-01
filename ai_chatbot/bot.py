@@ -22,7 +22,8 @@ chat_context = defaultdict(lambda: deque(maxlen=24))
 last_bot_reply = defaultdict(float)
 dialogue_tasks = {}
 
-SPONTANEOUS_REPLY_PROBABILITY = float(os.getenv("SPONTANEOUS_REPLY_PROBABILITY", "0.12"))
+SPONTANEOUS_REPLY_PROBABILITY = float(os.getenv("SPONTANEOUS_REPLY_PROBABILITY", "0.35"))
+GROUP_CHAT_MODE = os.getenv("GROUP_CHAT_MODE", "on").lower() == "on"
 MIN_REPLY_INTERVAL = float(os.getenv("MIN_REPLY_INTERVAL", "20"))
 DIALOGUE_TURNS = max(0, min(3, int(os.getenv("DIALOGUE_TURNS", "3"))))
 DIALOGUE_DELAY = max(1.0, float(os.getenv("DIALOGUE_DELAY", "2.5")))
@@ -36,6 +37,10 @@ def should_answer(message: Message) -> bool:
     if message.reply_to_message and message.reply_to_message.from_user and message.reply_to_message.from_user.is_bot:
         return True
     if BOT_USERNAME and f"@{BOT_USERNAME}" in text.lower():
+        return True
+    if GROUP_CHAT_MODE and message.chat.type in ("group", "supergroup"):
+        if time.monotonic() - last_bot_reply[message.chat.id] < MIN_REPLY_INTERVAL:
+            return False
         return True
     if time.monotonic() - last_bot_reply[message.chat.id] < MIN_REPLY_INTERVAL:
         return False
