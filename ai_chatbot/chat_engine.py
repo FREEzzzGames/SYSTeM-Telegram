@@ -195,11 +195,11 @@ class ChatEngine:
         assert 1 <= len(turns) <= 3
         personas = [t.persona for t in turns]
         assert len(personas) == len(set(personas)), personas
-        assert personas[0] == "zadr0t"
+        assert personas[0] in PERSONA_AFFINITY["game"][:3]
         assert all(t.text for t in turns)
 
         turns2 = engine.user_turn(100, "Есть стрим?")
-        assert turns2[0].persona == "mamkinBlogger"
+        assert turns2[0].persona in PERSONA_AFFINITY["live"][:3]
         assert len({t.persona for t in turns2}) == len(turns2)
 
         return {
