@@ -123,3 +123,91 @@ def run_self_test():
     assert all(p in PERSONAS for p, _ in results)
     assert all(a for _, a in results)
     return results
+
+
+DIALOGUE_BANKS = {
+    "FREEzzzy": [
+        "Согласен. А что остальные думают?",
+        "Хорошее начало. Я бы продолжил эту мысль.",
+        "Вот теперь разговор становится интереснее.",
+        "Поддержу. Только без лишней суеты.",
+        "Мне нравится направление. Кто ещё подключится?",
+        "Окей, это уже похоже на нормальный разговор.",
+        "Я бы на этом не останавливался.",
+        "Так, теперь интересно услышать остальных."
+    ],
+    "RakNaDne": [
+        "Вот, уже пошёл нормальный разговор.",
+        "Я бы тоже так сказал.",
+        "Ну всё, теперь подключились серьёзно.",
+        "Интересно, а кто думает иначе?",
+        "Вот это уже можно обсудить.",
+        "Поддерживаю. Двигаемся дальше.",
+        "Нормально начали, продолжайте.",
+        "Я слушаю, что скажут остальные."
+    ],
+    "mamkinBlogger": [
+        "О, вот это уже хороший сюжет для чата.",
+        "Фиксируем эту мысль 📹",
+        "Так, это становится интереснее.",
+        "Вот теперь есть о чём поговорить.",
+        "Чат, внимание: начинается дискуссия.",
+        "Хороший поворот. Продолжаем.",
+        "Из этого уже можно сделать отдельную тему.",
+        "О, остальные подключаются — отлично."
+    ],
+    "zadr0t": [
+        "Логично. Теперь проверим следующую мысль.",
+        "Есть такое. Но я бы уточнил один момент.",
+        "Окей, аргумент принят.",
+        "Теперь интересен контраргумент.",
+        "Нормально. Давайте не терять логику.",
+        "С этим можно работать.",
+        "Хорошо, цепочка рассуждений продолжается.",
+        "Теперь посмотрим, что скажет следующий."
+    ],
+    "tipoFUN": [
+        "Опа, дискуссия пошла 😂",
+        "Так, это уже становится весело.",
+        "Я за продолжение этого сериала.",
+        "Чат, не расходимся 😂",
+        "Вот теперь мне интересно.",
+        "О, пошла движуха.",
+        "Ставлю этому разговору лайк.",
+        "Так-так, кто следующий?"
+    ]
+}
+
+DIALOGUE_ORDER = ["FREEzzzy", "RakNaDne", "mamkinBlogger", "zadr0t", "tipoFUN"]
+
+def choose_dialogue_persona(previous_persona, step):
+    candidates = [p for p in DIALOGUE_ORDER if p != previous_persona]
+    return candidates[(step - 1) % len(candidates)]
+
+class ScriptedChat(ScriptedChat):
+    def dialogue_reply(self, chat_id, previous_persona, previous_text, step):
+        persona = choose_dialogue_persona(previous_persona, step)
+        pool = DIALOGUE_BANKS[persona]
+        used = set(self.used[(chat_id, persona)])
+        available = [p for p in pool if p not in used]
+        if not available:
+            available = pool
+            self.used[(chat_id, persona)].clear()
+        answer = random.choice(available)
+        self.used[(chat_id, persona)].append(answer)
+        self.last_persona[chat_id] = persona
+        return persona, answer
+
+def run_dialogue_self_test():
+    engine = ScriptedChat()
+    previous = "FREEzzzy"
+    seen = []
+    for step in range(1, 5):
+        persona, answer = engine.dialogue_reply(1, previous, "тест", step)
+        assert persona != previous
+        assert answer
+        seen.append(persona)
+        previous = persona
+    assert len(seen) == 4
+    assert len(set(seen)) == 4
+    return seen
