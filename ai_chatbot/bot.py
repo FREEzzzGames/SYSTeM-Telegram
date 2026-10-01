@@ -1,0 +1,128 @@
+import asyncio
+import os
+import random
+import time
+from collections import defaultdict, deque
+
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message
+from dotenv import load_dotenv
+from openai import AsyncOpenAI
+
+from personas import PERSONAS, SYSTEM_RULES
+
+load_dotenv()
+
+TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6")
+
+bot = Bot(TELEGRAM_BOT_TOKEN)
+dp = Dispatcher()
+ai = AsyncOpenAI(api_key=OPENAI_API_KEY)
+
+chat_context = defaultdict(lambda: deque(maxlen=24))
+last_bot_reply = defaultdict(float)
+
+SPONTANEOUS_REPLY_PROBABILITY = float(
+    os.getenv("SPONTANEOUS_REPLY_PROBABILITY", "0.12")
+)
+MIN_REPLY_INTERVAL = float(os.getenv("MIN_REPLY_INTERVAL", "20"))
+
+
+def choose_persona(text: str) -> str:
+    t = text.lower()
+
+    if any(x in t for x in ("игр", "game", "steam", "android", "код", "программ")):
+        return "zadr0t"
+    if any(x in t for x in ("стрим", "live", "youtube", "ютуб", "канал")):
+        return "mamkinBlogger"
+    if any(x in t for x in ("шут", "мем", "скуч", "виктор", "😂")):
+        return "tipoFUN"
+
+    return random.choice(["FREEzzzy", "RakNaDne", "tipoFUN"])
+
+
+def should_answer(message: Message) -> bool:
+    text = message.text or ""
+    if not text.strip() or text.startswith("/"):
+        return False
+
+    if message.reply_to_message and message.reply_to_message.from_user:
+        if message.reply_to_message.from_user.is_bot:
+            return True
+
+    bot_username = os.getenv("BOT_USERNAME", "").lower()
+    if bot_username and f"@{bot_username}" in text.lower():
+        return True
+
+    chat_id = message.chat.id
+    if time.monotonic() - last_bot_reply[chat_id] < MIN_REPLY_INTERVAL:
+        return False
+
+    return random.random() < SPONTANEOUS_REPLY_PROBABILITY
+
+
+async def generate_reply(chat_id: int, user_name: str, text: str):
+    persona_name = choose_persona(text)
+    persona = PERSONAS[persona_name]
+    history = "\n".join(chat_context[chat_id])
+
+    prompt = f"""
+Персонаж: {persona_name} {persona["emoji"]}
+Роль: {persona["role"]}
+Манера: {persona["style"]}
+
+Контекст последних сообщений:
+{history}
+
+Пользователь {user_name} написал:
+{text}
+
+Ответь естественно. Обычно 1–3 коротких предложения.
+"""
+
+    response = await ai.responses.create(
+        model=OPENAI_MODEL,
+        instructions=SYSTEM_RULES,
+        input=prompt,
+    )
+
+    return persona_name, response.output_text.strip()
+
+
+@dp.message(F.text)
+async def on_message(message: Message):
+    text = message.text.strip()
+    chat_id = message.chat.id
+    user_name = message.from_user.full_name if message.from_user else "Пользователь"
+
+    chat_context[chat_id].append(f"{user_name}: {text}")
+
+    if not should_answer(message):
+        return
+
+    try:
+        persona_name, answer = await generate_reply(chat_id, user_name, text)
+        if not answer:
+            return
+
+        answer = answer[:3500]
+        persona = PERSONAS[persona_name]
+
+        await message.reply(f"{persona['emoji']} {persona_name}: {answer}")
+
+        chat_context[chat_id].append(f"{persona_name}: {answer}")
+        last_bot_reply[chat_id] = time.monotonic()
+
+    except Exception as exc:
+        print(f"AI error: {type(exc).__name__}: {exc}")
+
+
+async def main():
+    print("FREEzzzGames AI Telegram bot started")
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
