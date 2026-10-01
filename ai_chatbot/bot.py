@@ -8,7 +8,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
 from dotenv import load_dotenv
 
-from scripted_chat import PERSONAS, ScriptedChat, run_self_test
+from scripted_chat import PERSONAS, ScriptedChat, run_self_test, run_dialogue_self_test
 
 load_dotenv()
 
@@ -20,9 +20,12 @@ dp = Dispatcher()
 chat_engine = ScriptedChat()
 chat_context = defaultdict(lambda: deque(maxlen=24))
 last_bot_reply = defaultdict(float)
+dialogue_tasks = {}
 
 SPONTANEOUS_REPLY_PROBABILITY = float(os.getenv("SPONTANEOUS_REPLY_PROBABILITY", "0.12"))
 MIN_REPLY_INTERVAL = float(os.getenv("MIN_REPLY_INTERVAL", "20"))
+DIALOGUE_TURNS = max(0, min(3, int(os.getenv("DIALOGUE_TURNS", "3"))))
+DIALOGUE_DELAY = max(1.0, float(os.getenv("DIALOGUE_DELAY", "2.5")))
 
 def should_answer(message: Message) -> bool:
     text = message.text or ""
@@ -39,6 +42,45 @@ def should_answer(message: Message) -> bool:
     import random
     return random.random() < SPONTANEOUS_REPLY_PROBABILITY
 
+async def continue_dialogue(chat_id, previous_persona, previous_text):
+    try:
+        for step in range(1, DIALOGUE_TURNS + 1):
+            await asyncio.sleep(DIALOGUE_DELAY)
+            persona_name, answer = chat_engine.dialogue_reply(
+                chat_id, previous_persona, previous_text, step
+            )
+            persona = PERSONAS[persona_name]
+            sent = await bot.send_message(
+                chat_id,
+                f"{persona['emoji']} {persona_name}: {answer}",
+            )
+            chat_context[chat_id].append(f"{persona_name}: {answer}")
+            previous_persona = persona_name
+            previous_text = answer
+            last_bot_reply[chat_id] = time.monotonic()
+            print(
+                f"DIALOGUE chat={chat_id} step={step} "
+                f"persona={persona_name} message_id={sent.message_id}"
+            )
+    except asyncio.CancelledError:
+        print(f"DIALOGUE cancelled chat={chat_id}")
+        raise
+    except Exception as exc:
+        print(f"DIALOGUE error: {type(exc).__name__}: {exc}")
+    finally:
+        current = asyncio.current_task()
+        if dialogue_tasks.get(chat_id) is current:
+            dialogue_tasks.pop(chat_id, None)
+
+def start_dialogue(chat_id, persona_name, answer):
+    previous = dialogue_tasks.get(chat_id)
+    if previous and not previous.done():
+        previous.cancel()
+    if DIALOGUE_TURNS > 0:
+        dialogue_tasks[chat_id] = asyncio.create_task(
+            continue_dialogue(chat_id, persona_name, answer)
+        )
+
 @dp.message(F.text)
 async def on_message(message: Message):
     text = message.text.strip()
@@ -50,14 +92,23 @@ async def on_message(message: Message):
     try:
         persona_name, answer = chat_engine.reply(chat_id, text)
         persona = PERSONAS[persona_name]
-        await message.reply(f"{persona['emoji']} {persona_name}: {answer}")
+        sent = await message.reply(f"{persona['emoji']} {persona_name}: {answer}")
         chat_context[chat_id].append(f"{persona_name}: {answer}")
         last_bot_reply[chat_id] = time.monotonic()
+        print(
+            f"USER_REPLY chat={chat_id} persona={persona_name} "
+            f"message_id={sent.message_id}"
+        )
+        start_dialogue(chat_id, persona_name, answer)
     except Exception as exc:
         print(f"CHAT error: {type(exc).__name__}: {exc}")
 
 async def health(request):
-    return web.json_response({"status": "ok", "service": "FREEzzzGames scripted chat"})
+    return web.json_response({
+        "status": "ok",
+        "service": "FREEzzzGames scripted chat",
+        "dialogue_turns": DIALOGUE_TURNS,
+    })
 
 async def start_health_server():
     app = web.Application()
@@ -74,6 +125,8 @@ async def main():
     print("FREEzzzGames scripted chat starting")
     results = run_self_test()
     print(f"SELF-TEST OK: {len(results)} scenarios")
+    dialogue = run_dialogue_self_test()
+    print(f"DIALOGUE-SELF-TEST OK: {dialogue}")
     await start_health_server()
     await dp.start_polling(bot)
 
