@@ -18,6 +18,7 @@ TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 DEEPSEEK_API_KEY = os.environ["DEEPSEEK_API_KEY"]
 DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-flash")
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "256"))
 
 bot = Bot(TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
@@ -95,7 +96,17 @@ async def generate_reply(chat_id: int, user_name: str, text: str):
         model=DEEPSEEK_MODEL,
         instructions=SYSTEM_RULES,
         input=prompt,
+        max_output_tokens=MAX_OUTPUT_TOKENS,
     )
+
+    usage = getattr(response, "usage", None)
+    if usage:
+        print(
+            "DeepSeek usage: "
+            f"input={getattr(usage, 'input_tokens', 0)}, "
+            f"output={getattr(usage, 'output_tokens', 0)}, "
+            f"total={getattr(usage, 'total_tokens', 0)}"
+        )
 
     return persona_name, response.output_text.strip()
 
