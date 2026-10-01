@@ -4,6 +4,7 @@ import random
 import time
 from collections import defaultdict, deque
 
+from aiohttp import web
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
 from dotenv import load_dotenv
@@ -119,8 +120,28 @@ async def on_message(message: Message):
         print(f"AI error: {type(exc).__name__}: {exc}")
 
 
+async def health(request):
+    return web.json_response({"status": "ok", "service": "FREEzzzGames AI"})
+
+
+async def start_health_server():
+    app = web.Application()
+    app.router.add_get("/", health)
+    app.router.add_get("/health", health)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+
+    port = int(os.getenv("PORT", "10000"))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+    print(f"Health server listening on port {port}")
+
+
 async def main():
     print("FREEzzzGames AI Telegram bot started")
+    await start_health_server()
     await dp.start_polling(bot)
 
 
