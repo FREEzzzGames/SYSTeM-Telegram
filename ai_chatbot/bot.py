@@ -15,12 +15,13 @@ from personas import PERSONAS, SYSTEM_RULES
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6")
+DEEPSEEK_API_KEY = os.environ["DEEPSEEK_API_KEY"]
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-flash")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 
 bot = Bot(TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
-ai = AsyncOpenAI(api_key=OPENAI_API_KEY)
+ai = AsyncOpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 
 chat_context = defaultdict(lambda: deque(maxlen=24))
 last_bot_reply = defaultdict(float)
@@ -91,7 +92,7 @@ async def generate_reply(chat_id: int, user_name: str, text: str):
 """
 
     response = await ai.responses.create(
-        model=OPENAI_MODEL,
+        model=DEEPSEEK_MODEL,
         instructions=SYSTEM_RULES,
         input=prompt,
     )
