@@ -5,7 +5,7 @@ from collections import defaultdict, deque
 
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F
-from aiogram.types import Message
+from aiogram.types import Message, Update
 from dotenv import load_dotenv
 
 from scripted_chat import PERSONAS, ScriptedChat, run_self_test, run_dialogue_self_test
@@ -14,6 +14,10 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 BOT_USERNAME = os.getenv("BOT_USERNAME", "").lower().lstrip("@")
+PUBLIC_URL = os.getenv("PUBLIC_URL", "https://freezzzy-ai-chat.onrender.com").rstrip("/")
+WEBHOOK_PATH = os.getenv("WEBHOOK_PATH", "/telegram/webhook/freezzzzy")
+WEBHOOK_URL = f"{PUBLIC_URL}{WEBHOOK_PATH}"
+
 bot = Bot(TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
 
@@ -92,8 +96,10 @@ async def on_message(message: Message):
     chat_id = message.chat.id
     user_name = message.from_user.full_name if message.from_user else "Пользователь"
     chat_context[chat_id].append(f"{user_name}: {text}")
+
     if not should_answer(message):
         return
+
     try:
         persona_name, answer = chat_engine.reply(chat_id, text)
         persona = PERSONAS[persona_name]
@@ -108,23 +114,50 @@ async def on_message(message: Message):
     except Exception as exc:
         print(f"CHAT error: {type(exc).__name__}: {exc}")
 
+async def telegram_webhook(request: web.Request):
+    try:
+        data = await request.json()
+        update = Update.model_validate(data)
+        await dp.feed_update(bot, update)
+        return web.Response(status=200)
+    except Exception as exc:
+        print(f"WEBHOOK error: {type(exc).__name__}: {exc}")
+        return web.Response(status=500)
+
 async def health(request):
     return web.json_response({
         "status": "ok",
         "service": "FREEzzzGames scripted chat",
+        "transport": "telegram_webhook",
         "dialogue_turns": DIALOGUE_TURNS,
+        "group_chat_mode": GROUP_CHAT_MODE,
     })
 
-async def start_health_server():
+async def start_server():
     app = web.Application()
     app.router.add_get("/", health)
     app.router.add_get("/health", health)
+    app.router.add_post(WEBHOOK_PATH, telegram_webhook)
+
     runner = web.AppRunner(app)
     await runner.setup()
     port = int(os.getenv("PORT", "10000"))
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-    print(f"Health server listening on port {port}")
+
+    allowed_updates = dp.resolve_used_update_types()
+    await bot.set_webhook(
+        url=WEBHOOK_URL,
+        allowed_updates=allowed_updates,
+        drop_pending_updates=False,
+    )
+
+    info = await bot.get_webhook_info()
+    print(
+        f"Telegram webhook configured: url={info.url or '<empty>'} "
+        f"pending={info.pending_update_count}"
+    )
+    print(f"Health/webhook server listening on port {port}")
 
 async def main():
     print("FREEzzzGames scripted chat starting")
@@ -132,8 +165,8 @@ async def main():
     print(f"SELF-TEST OK: {len(results)} scenarios")
     dialogue = run_dialogue_self_test()
     print(f"DIALOGUE-SELF-TEST OK: {dialogue}")
-    await start_health_server()
-    await dp.start_polling(bot)
+    await start_server()
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
